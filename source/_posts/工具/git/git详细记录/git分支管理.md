@@ -382,7 +382,7 @@ $ git stash apply stash@{0}
 
 当手头工作没有完成时，先把工作现场git stash一下，然后去修复bug，修复后，再git stash pop，回到工作现场。
 
-##feature 分支
+## feature 分支
 
 开发一个新feature，最好新建一个分支；
 

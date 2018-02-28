@@ -6,12 +6,11 @@ categories: Tool
 tags: Git
 ---
 
-本文全部复制[Git教程](https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000),自己理解的就简单复制，没有理解的就全部粘贴。
+本文全部复制[Git教程](https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000),自己已经理解的内容只是简单复制总结部分，没有理解的就全部粘贴，方便以后进一步学习、理解。
 
 <!--more-->
 
 ## 添加远程库
-### 小结
 
 要关联一个远程库，使用命令git remote add origin git@server-name:path/repo-name.git；
 
@@ -60,6 +59,8 @@ git remote add origin git@gitee.com:liaoxuefeng/learngit.git
 
 ```
 
+> 小提示 ： origin 远程仓库也就是url对应的仓库 在本地的别名。
+
 如果在使用命令git remote add时报错：
 
 ```
@@ -98,7 +99,7 @@ origin    git@gitee.com:liaoxuefeng/learngit.git (push)
 
 答案是肯定的，因为git本身是分布式版本控制系统，可以同步到另外一个远程库，当然也可以同步到另外两个远程库。
 
-使用多个远程库时，我们要注意，git给远程库起的默认名称是origin，如果有多个远程库，我们需要用不同的名称来标识不同的远程库。
+使用多个远程库时，我们要注意，<font color=red>git给远程库起的默认名称是origin</font>，如果有多个远程库，我们需要用不同的名称来标识不同的远程库。
 
 仍然以learngit本地库为例，我们先删除已关联的名为origin的远程库：
 
@@ -143,3 +144,14 @@ git push gitee master
 ![multi-remote](http://of685p9vy.bkt.clouddn.com/git/repositorymulti-remote.jpg)
 
 码云也同样提供了Pull request功能，可以让其他小伙伴参与到开源项目中来。你可以通过Fork我的仓库：[https://gitee.com/liaoxuefeng/learngit][3]，创建一个your-gitee-id.txt的文本文件， 写点自己学习Git的心得，然后推送一个pull request给我，这个仓库会在码云和GitHub做双向同步。
+
+
+> 小贴士 ：git fetch 和git pull的区别
+> 
+> * fetch 命令只是将远端的数据拉到本地仓库，并不自动合并到当前工作分支
+> * pull 若某个分支用于跟踪某个远端仓库的分支，可以使用 git pull 命令自动抓取数据下来，然后将远端分支自动合并到本地仓库中当前分支
+
+
+## 参考
+
+* [Git-基础-远程仓库的使用](https://git-scm.com/book/zh/v1/Git-基础-远程仓库的使用)
