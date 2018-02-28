@@ -30,7 +30,7 @@ git clone git@github.com:michaelliao/gitskills.git
 
 使用GitHub时，国内的用户经常遇到的问题是访问速度太慢，有时候还会出现无法连接的情况（原因你懂的）。
 
-如果我们希望体验Git飞一般的速度，可以使用国内的Git托管服务——[码云][1]（[gitee.com][2]）。
+如果我们希望体验Git飞一般的速度，可以使用国内的Git托管服务——[码云](https://gitee.com/）。
 
 和GitHub相比，码云也提供免费的Git仓库。此外，还集成了代码质量检测、项目演示等功能。对于团队协作开发，码云还提供了项目管理、代码托管、文档管理的服务，5人以下小团队免费。
 
@@ -143,7 +143,7 @@ git push gitee master
 
 ![multi-remote](http://of685p9vy.bkt.clouddn.com/git/repositorymulti-remote.jpg)
 
-码云也同样提供了Pull request功能，可以让其他小伙伴参与到开源项目中来。你可以通过Fork我的仓库：[https://gitee.com/liaoxuefeng/learngit][3]，创建一个your-gitee-id.txt的文本文件， 写点自己学习Git的心得，然后推送一个pull request给我，这个仓库会在码云和GitHub做双向同步。
+码云也同样提供了Pull request功能，可以让其他小伙伴参与到开源项目中来。
 
 
 > 小贴士 ：git fetch 和git pull的区别
