@@ -6,6 +6,7 @@ categories: C语言语法
 toc: true
 ---
 
+<!-- more -->
 
 （1）申请方式
 
