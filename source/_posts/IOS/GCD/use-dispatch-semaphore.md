@@ -8,6 +8,8 @@ toc: true
 
 转载请注明出处 [关于dispatch_semaphore的使用](http://www.cnblogs.com/snailHL/p/3906112.html)。
 dispatch_semaphore是GCD用来同步的一种方式，与他相关的共有三个函数，分别是dispatch_semaphore_create、dispatch_semaphore_signal、dispatch_semaphore_wait。
+
+
 <!--more-->
 
 下面我们逐一介绍三个函数：
@@ -15,14 +17,18 @@ dispatch_semaphore是GCD用来同步的一种方式，与他相关的共有三�
 # dispatch_semaphore_create
 dispatch_semaphore_create的声明为：
 
-	dispatch_semaphore_t  dispatch_semaphore_create(long value);
+```
+dispatch_semaphore_t  dispatch_semaphore_create(long value);
+```
 	
 传入的参数为long，输出一个dispatch_semaphore_t类型且值为value的信号量。值得注意的是，这里的传入的参数value必须大于或等于0，否则dispatch_semaphore_create会返回NULL。
 
 # dispatch_semaphore_signal
 dispatch_semaphore_signal的声明为：
 
-	long dispatch_semaphore_signal(dispatch_semaphore_t dsema)
+```
+long dispatch_semaphore_signal(dispatch_semaphore_t dsema)
+```
 
 这个函数会使传入的信号量dsema的值加1；
 
@@ -30,11 +36,14 @@ dispatch_semaphore_signal的声明为：
 
 dispatch_semaphore_wait的声明为：
 
-	long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout)；
+```
+long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout)；
+```
 
 这个函数会使传入的信号量dsema的值减1；这个函数的作用是这样的，如果dsema信号量的值大于0，该函数所处线程就继续执行下面的语句，并且将信号量的值减1；如果desema的值为0，那么这个函数就阻塞当前线程等待timeout（注意timeout的类型为dispatch_time_t，不能直接传入整形或float型数），如果等待的期间desema的值被dispatch_semaphore_signal函数加1了，且该函数（即dispatch_semaphore_wait）所处线程获得了信号量，那么就继续向下执行并将信号量减1。如果等待期间没有获取到信号量或者信号量的值一直为0，那么等到timeout时，其所处线程自动执行其后语句。
 
 # 返回值
+
 dispatch_semaphore_signal的返回值为long类型，当返回值为0时表示当前并没有线程等待其处理的信号量，其处理的信号量的值加1即可。当返回值不为0时，表示其当前有（一个或多个）线程等待其处理的信号量，并且该函数唤醒了一个等待的线程（当线程有优先级时，唤醒优先级最高的线程；否则随机唤醒）。
 dispatch_semaphore_wait的返回值也为long型。当其返回0时表示在timeout之前，该函数所处的线程被成功唤醒。当其返回不为0时，表示timeout发生。
 　　
@@ -42,18 +51,24 @@ dispatch_semaphore_wait的返回值也为long型。当其返回0时表示在time
 
 在设置timeout时，比较有用的两个宏：DISPATCH_TIME_NOW 和 DISPATCH_TIME_FOREVER。
 
-	DISPATCH_TIME_NOW　　表示当前；
-	DISPATCH_TIME_FOREVER　　表示遥远的未来；
+```
+DISPATCH_TIME_NOW　　表示当前；
+DISPATCH_TIME_FOREVER　　表示遥远的未来；
+```
 
 一般可以直接设置timeout为这两个宏其中的一个，或者自己创建一个dispatch_time_t类型的变量。创建dispatch_time_t类型的变量有两种方法，dispatch_time和dispatch_walltime。利用创建dispatch_time创建dispatch_time_t类型变量的时候一般也会用到这两个变量。
 
 dispatch_time的声明如下：
 
-	dispatch_time_t dispatch_time(dispatch_time_t when, int64_t delta)；
+```
+dispatch_time_t dispatch_time(dispatch_time_t when, int64_t delta)；
+```
 
 其参数when需传入一个dispatch_time_t类型的变量，和一个delta值。表示when加delta时间就是timeout的时间。例如：
 
-	dispatch_time_t  t = dispatch_time(DISPATCH_TIME_NOW, 1*1000*1000*1000);
+```
+dispatch_time_t  t = dispatch_time(DISPATCH_TIME_NOW, 1*1000*1000*1000);
+```
 
 表示当前时间向后延时一秒为timeout的时间。
 
@@ -66,44 +81,48 @@ dispatch_time的声明如下：
 
 代码举简单示例如下：
 
-    dispatch_semaphore_t signal;
-    signal = dispatch_semaphore_create(1);
-    __block long x = 0;
-    NSLog(@"0_x:%ld",x);
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    sleep(1);
-    NSLog(@"waiting");
-    x = dispatch_semaphore_signal(signal);
-    NSLog(@"1_x:%ld",x);
+```
+dispatch_semaphore_t signal;
+signal = dispatch_semaphore_create(1);
+__block long x = 0;
+NSLog(@"0_x:%ld",x);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+sleep(1);
+NSLog(@"waiting");
+x = dispatch_semaphore_signal(signal);
+NSLog(@"1_x:%ld",x);
 
-    sleep(2);
-    NSLog(@"waking");
-    x = dispatch_semaphore_signal(signal);
-    NSLog(@"2_x:%ld",x);
-    });
-    //    dispatch_time_t duration = dispatch_time(DISPATCH_TIME_NOW, 1*1000*1000*1000); //超时1秒
-    //    dispatch_semaphore_wait(signal, duration);
+sleep(2);
+NSLog(@"waking");
+x = dispatch_semaphore_signal(signal);
+NSLog(@"2_x:%ld",x);
+});
+//    dispatch_time_t duration = dispatch_time(DISPATCH_TIME_NOW, 1*1000*1000*1000); //超时1秒
+//    dispatch_semaphore_wait(signal, duration);
 
-    x = dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    NSLog(@"3_x:%ld",x);
+x = dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+NSLog(@"3_x:%ld",x);
 
-    x = dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    NSLog(@"wait 2");
-    NSLog(@"4_x:%ld",x);
+x = dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+NSLog(@"wait 2");
+NSLog(@"4_x:%ld",x);
 
-    x = dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    NSLog(@"wait 3");
-    NSLog(@"5_x:%ld",x);
+x = dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+NSLog(@"wait 3");
+NSLog(@"5_x:%ld",x);
+```
 
 最终打印的结果为：
 
-    2014-08-11 22:51:54.734 LHTest[15700:70b] 0_x:0
-    2014-08-11 22:51:54.737 LHTest[15700:70b] 3_x:0
-    2014-08-11 22:51:55.738 LHTest[15700:f03] waiting
-    2014-08-11 22:51:55.739 LHTest[15700:70b] wait 2
-    2014-08-11 22:51:55.739 LHTest[15700:f03] 1_x:1
-    2014-08-11 22:51:55.739 LHTest[15700:70b] 4_x:0
-    2014-08-11 22:51:57.741 LHTest[15700:f03] waking
-    2014-08-11 22:51:57.742 LHTest[15700:f03] 2_x:1
-    2014-08-11 22:51:57.742 LHTest[15700:70b] wait 3
-    2014-08-11 22:51:57.742 LHTest[15700:70b] 5_x:0
+```
+2014-08-11 22:51:54.734 LHTest[15700:70b] 0_x:0
+2014-08-11 22:51:54.737 LHTest[15700:70b] 3_x:0
+2014-08-11 22:51:55.738 LHTest[15700:f03] waiting
+2014-08-11 22:51:55.739 LHTest[15700:70b] wait 2
+2014-08-11 22:51:55.739 LHTest[15700:f03] 1_x:1
+2014-08-11 22:51:55.739 LHTest[15700:70b] 4_x:0
+2014-08-11 22:51:57.741 LHTest[15700:f03] waking
+2014-08-11 22:51:57.742 LHTest[15700:f03] 2_x:1
+2014-08-11 22:51:57.742 LHTest[15700:70b] wait 3
+2014-08-11 22:51:57.742 LHTest[15700:70b] 5_x:0
+```

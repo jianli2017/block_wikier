@@ -1,7 +1,7 @@
 ---
-title: set命令
+title: export命令
 date: 2018-07-20 12:07:12
-tags: set
+tags: export
 categories: linux命令
 toc: true
 ---
