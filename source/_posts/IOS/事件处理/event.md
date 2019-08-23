@@ -57,35 +57,29 @@ UIResponder是iOS中用于处理用户事件的API，可以处理触摸事件、
 <font color = red>
 
 1.  视图的hidden等于YES。
-
 2.  视图的alpha小于等于0.01。
-
 3.  视图的userInteractionEnabled为NO。
 
 </font>
+
+
 如果点击事件是发生在视图外，但在其子视图内部，子视图也不能接收事件并成为第一响应者。这是因为在其父视图进行hitTest:withEvent:的过程中，就会将其忽略掉。
+
 
 ## 事件传递
 
-#### 传递过程
+### 传递过程
 
-<u>
+
 1.  UIApplication接收到事件，将事件传递给keyWindow。
-
 2.  keyWindow遍历subViews的hitTest:withEvent:方法，找到点击区域内合适的视图来处理事件。
-
 3.  UIView的子视图也会遍历其subViews的hitTest:withEvent:方法，以此类推。
-
 4.  直到找到点击区域内，且处于最上方的视图，将视图逐步返回给UIApplication。
-
 5.  在查找第一响应者的过程中，已经形成了一个响应者链。
-
 6.  应用程序会先调用第一响应者处理事件。
-
 7.  如果第一响应者不能处理事件，则调用其nextResponder方法，一直找响应者链中能处理该事件的对象。
-
 8.  最后到UIApplication后仍然没有能处理该事件的对象，则该事件被废弃。
-</u>
+
 
 模拟代码
 
@@ -111,42 +105,33 @@ UIResponder是iOS中用于处理用户事件的API，可以处理触摸事件、
     }
     return nil;
 }
-
 ```
 
-#### 示例
+### 事件响应
 
-![事件传递](event/eventChain.png)
-
-事件传递示例
+![事件响应](event/eventChain.png)
 
 如上图所示，响应者链如下：
 
 1.  如果点击UITextField后其会成为第一响应者。
-
 2.  如果textField未处理事件，则会将事件传递给下一级响应者链，也就是其父视图。
-
 3.  父视图未处理事件则继续向下传递，也就是UIViewController的View。
-
 4.  如果控制器的View未处理事件，则会交给控制器处理。
-
 5.  控制器未处理则会交给UIWindow。
-
 6.  然后会交给UIApplication。
-
 7.  最后交给UIApplicationDelegate，如果其未处理则丢弃事件。
 
 <u>事件通过UITouch进行传递，在事件到来时，第一响应者会分配对应的UITouch，UITouch会一直跟随着第一响应者，并且根据当前事件的变化UITouch也会变化，当事件结束后则UITouch被释放。</u>
 
 <font color=red>UIViewController没有hitTest:withEvent:方法，所以控制器不参与查找响应视图的过程。但是控制器在响应者链中，如果控制器的View不处理事件，会交给控制器来处理。控制器不处理的话，再交给View的下一级响应者处理。</font>
 
-#### 注意
+### 注意
+
 
 1.  在执行hitTest:withEvent:方法时，如果该视图是hidden等于NO的那三种被忽略的情况，则改视图返回nil。
-
 2.  如果当前视图在响应者链中，但其没有处理事件，则不考虑其兄弟视图，即使其兄弟视图和其都在点击范围内。
-
 3.  UIImageView的userInteractionEnabled默认为NO，如果想要UIImageView响应交互事件，将属性设置为YES即可响应事件。
+
 
 ## 事件控制
 
@@ -211,15 +196,13 @@ UIControl
 
 ## 事件传递优先级
 
-#### 测试
 
 为了有依据的推断响应事件的实现和传递机制，我们做以下测试。
 
-###### 示例1
 
 ![](event/example1.png)
 
-示例1
+### 示例1
 
 假设RootView、SuperView、Button都实现touches方法，并且Button添加buttonAction:的action，点击button后的调用如下。
 
@@ -239,7 +222,8 @@ Button -> buttonAction:
 
 ```
 
-###### 示例2
+### 示例2
+
 
 还是上面的视图结构，我们给RootView加上UITapGestureRecognizer手势，并且通过tapAction:方法接收回调，点击上面的SuperView后，方法调用如下。
 
@@ -262,11 +246,10 @@ SuperView -> touchesCancelled:
 
 ```
 
-###### 示例3
+### 示例3
 
-![]event/example2.png)
+![示例3](event/example2.png)
 
-示例3
 
 上面的视图中Subview1、Subview2、Subview3是同级视图，都是SuperView的子视图。我们给Subview1加上UITapGestureRecognizer手势，并且通过subView1Action:方法接收回调，点击上面的Subview3后，方法调用如下。
 
@@ -285,15 +268,13 @@ Subview3 -> touchesEnded:withEvent:
 
 通过上面的例子来看，虽然Subview1在Subview3的下面，并且添加了手势，点击区域是在Subview1和Subview3两个视图上的。但是由于经过hitTest和pointInside之后，响应者链中并没有Subview1，所以Subview1的手势并没有被响应。
 
-#### 分析
+### 分析(这个很重要)
 
 根据我们上面的测试，推断iOS响应事件的优先级，以及整体的响应逻辑。
 
-当事件到来时，会通过hitTest和pointInside两个方法，从Window开始向上面的视图查找，找到第一响应者的视图。找到第一响应者后，系统会判断其是继承自UIControl还是UIResponder，如果是继承自UIControl，则直接通过UIApplication直接向其派发消息，并且不再向响应者链派发消息。
-
-如果是继承自UIResponder的类，则调用第一响应者的touchesBegin，并且不会立即执行touchesEnded，而是调用之后顺着响应者链向后查找。如果在查找过程中，发现响应者链中有的视图添加了手势，则进入手势的代理方法中，如果代理方法返回可以响应这个事件，则将第一响应者的事件取消，并调用其touchesCanceled方法，然后由手势来响应事件。
-
-如果手势不能处理事件，则交给第一响应者来处理。如果第一响应者也不能响应事件，则顺着响应者链继续向后查找，直到找到能够处理事件的UIResponder对象。如果找到UIApplication还没有对象响应事件的话，则将这次事件丢弃。
+1. 当事件到来时，会通过hitTest和pointInside两个方法，从Window开始向上面的视图查找，找到第一响应者的视图。找到第一响应者后，系统会判断其是继承自UIControl还是UIResponder，如果是继承自UIControl，则直接通过UIApplication直接向其派发消息，并且不再向响应者链派发消息。
+2. 如果是继承自UIResponder的类，则调用第一响应者的touchesBegin，并且不会立即执行touchesEnded，而是调用之后顺着响应者链向后查找。如果在查找过程中，发现响应者链中有的视图添加了手势，则进入手势的代理方法中，如果代理方法返回可以响应这个事件，则将第一响应者的事件取消，并调用其touchesCanceled方法，然后由手势来响应事件。
+3. 如果手势不能处理事件，则交给第一响应者来处理。如果第一响应者也不能响应事件，则顺着响应者链继续向后查找，直到找到能够处理事件的UIResponder对象。如果找到UIApplication还没有对象响应事件的话，则将这次事件丢弃。
 
 ### 接收事件深度剖析
 
@@ -309,7 +290,7 @@ Subview3 -> touchesEnded:withEvent:
 
 5.  在函数内部，调用UIApplication的sendEvent:方法，将UIEvent传递给第一响应者或UIControl对象处理，在UIEvent内部包含若干个UITouch对象。
 
-###### Tips
+### Tips
 
 source1是runloop用来处理mach port传来的系统事件的，source0是用来处理用户事件的。 source1收到系统事件后，都会调用source0的函数，所以最终这些事件都是由source0处理的。
 
@@ -334,6 +315,7 @@ source1是runloop用来处理mach port传来的系统事件的，source0是用�
 }
 
 ```
+
 
 作者：刘小壮
 
