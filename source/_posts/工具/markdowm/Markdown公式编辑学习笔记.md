@@ -206,4 +206,6 @@ $$ \lim_{n \to +\infty} \frac{1}{n(n+1)} \quad and \quad \lim_{x\leftarrow{示�
 $$ \lim_{n \to +\infty} \frac{1}{n(n+1)} \quad and \quad \lim_{x\leftarrow{示例}} \frac{1}{n(n+1)} $$
 
 ## 参考
-[Cmd Markdown 公式指导手册](https://www.zybuluo.com/codeep/note/163962)
+1. [Cmd Markdown 公式指导手册](https://www.zybuluo.com/codeep/note/163962)
+2. [markdown中公式编辑教程](https://www.jianshu.com/p/25f0139637b7)
+
